@@ -25,3 +25,69 @@
 (define-data-var referral-fee-bps uint u5) ;; 0.05% referral fee
 (define-data-var protocol-fees-accumulated uint u0)
 
+;; Data maps
+(define-map liquidity-pools
+  { pool-id: uint }
+  {
+    name: (string-ascii 32),
+    token-a: principal,
+    token-b: principal,
+    reserve-a: uint,
+    reserve-b: uint,
+    liquidity-tokens: uint,
+    fee-bps: uint,
+    last-rebalance-time: uint,
+    is-active: bool,
+    max-capacity: uint,
+    total-volume: uint,
+    yield-strategy-id: (optional uint)
+  }
+)
+
+(define-map pool-providers
+  { pool-id: uint, provider: principal }
+  { liquidity-tokens: uint }
+)
+
+(define-map user-deposits
+  { user: principal, token: principal }
+  { amount: uint, last-deposit-time: uint }
+)
+
+(define-map yield-strategies
+  { strategy-id: uint }
+  {
+    name: (string-ascii 32),
+    target-token: principal,
+    apy-estimate: uint,
+    risk-level: uint,
+    is-active: bool,
+    protocol: (string-ascii 32),
+    min-lock-period: uint,
+    rewards-token: (optional principal)
+  }
+)
+
+(define-map route-configuration
+  { route-id: uint }
+  {
+    name: (string-ascii 32),
+    path: (list 10 uint),
+    is-optimized: bool
+  }
+)
+
+(define-map user-referrals
+  { user: principal }
+  { referrer: principal, fees-earned: uint }
+)
+
+(define-map token-whitelist
+  { token: principal }
+  { is-whitelisted: bool, decimals: uint }
+)
+
+;; Counters
+(define-data-var next-pool-id uint u1)
+(define-data-var next-strategy-id uint u1)
+(define-data-var next-route-id uint u1)
