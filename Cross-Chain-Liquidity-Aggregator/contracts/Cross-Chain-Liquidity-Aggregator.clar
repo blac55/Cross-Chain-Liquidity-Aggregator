@@ -598,3 +598,39 @@
     (ok token)
   )
 )
+
+(define-public (update-token-price (token principal) (new-price uint))
+  (let
+    (
+      (oracle (unwrap! (map-get? price-oracles { token: token }) ERR-ORACLE-NOT-FOUND))
+    )
+    (asserts! (is-eq tx-sender (get oracle-address oracle)) ERR-NOT-AUTHORIZED)
+    (asserts! (get is-active oracle) ERR-ORACLE-NOT-FOUND)
+    
+    (map-set price-oracles
+      { token: token }
+      (merge oracle { 
+        price: new-price,
+        last-update-time: stacks-block-height
+      })
+    )
+    (ok new-price)
+  )
+)
+
+(define-read-only (get-token-price (token principal))
+  (default-to u100000000 ;; Default price if oracle not found
+    (get price (map-get? price-oracles { token: token })))
+)
+
+(define-read-only (is-price-fresh (token principal) (max-age uint))
+  (let
+    (
+      (oracle (map-get? price-oracles { token: token }))
+    )
+    (match oracle
+      oracle-data (< (- stacks-block-height (get last-update-time oracle-data)) max-age)
+      false
+    )
+  )
+)
